@@ -1,0 +1,51 @@
+jQuery(document).ready(function( $ ) {
+  function load() {
+    var button = $('#cutters-load-portfolio');
+    var scrollPos = $(window).scrollTop();
+    // return if already loading
+    if (button.hasClass('loading')) {
+      return;
+    }
+    // otherwise, go ahead and grab new content
+    else {
+      button.html('Please wait...');
+      data = {
+        action: 'cutters_ajax_load_portfolio',
+        page: cutters_post_archive_params.current_page,
+        query: cutters_post_archive_params.posts
+      }
+      $.ajax({
+        type: 'POST',
+        data: data,
+        url: cutters_post_archive_params.ajaxurl,
+        beforeSend: function(xhr) {
+          button.addClass('loading');
+        }
+      })
+      .done(function(response, status, xhr){
+        console.log(response);
+        console.log(status);
+        if (response) {
+          $('.cutters-portfolio-archive').append(response);
+          snap_post_archive_params.current_page++;
+          if (cutters_post_archive_params.max_page == cutters_post_archive_params.current_page) {
+              button.remove();
+          }
+        }
+      })
+      .fail( function(xhr, textStatus) {
+        window.addAlert('error', 'Failed to load more. Please try again.');
+      })
+      .always(function(){
+        $(window).scrollTop(scrollPos);
+        button.html('Load More Portfolio Examples');
+        button.removeClass('loading');
+      })
+    }
+  }
+
+  $('#cutters-load-portfolio').click(function(e) {
+    e.preventDefault();
+    load();
+  })
+})
